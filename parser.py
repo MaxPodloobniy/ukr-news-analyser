@@ -40,9 +40,13 @@ headers = {
     "Sec-Fetch-Site": "none",
     "Sec-Fetch-User": "?1"
 }
+
 headers_2 = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
 }
+
+# Скільки днів парсимо
+days_to_parse = 7
 
 
 def get_html_file(url, render_js=False):
@@ -63,14 +67,14 @@ def get_html_file(url, render_js=False):
 
 
 def parse_ukr_pravda():
-    print('-------------------- Парсимо pravda.com.ua --------------------')
+    print('\n Парсинг сайту pravda.com.ua')
     url = 'https://www.pravda.com.ua/articles/'
     soup = get_html_file(url)
 
     news_data_list = []  # Зберігатимемо всі дані в списку словників
 
     now = datetime.now()
-    two_days_ago = now - timedelta(days=2)
+    two_days_ago = now - timedelta(days=days_to_parse)
 
     articles = soup.find_all("div", attrs={'class': 'article article_list'})
 
@@ -129,7 +133,7 @@ def parse_ukr_pravda():
 
 
 def parse_babel():
-    print('-------------------- Парсимо babel.ua --------------------')
+    print('\n Парсинг сайту babel.ua')
     url = 'https://babel.ua/text-sitemap/'
 
     curr_date = datetime.today()
@@ -139,7 +143,7 @@ def parse_babel():
 
     news_data_list = []  # Зберігатимемо всі дані в списку словників
 
-    for i in range(2):
+    for i in range(days_to_parse):
         print(f'Парсимо новини за день {curr_day:02d}, місяць {curr_month:02d}, рік {curr_year}')
 
         curr_url = f"{url}{curr_year}-{curr_month:02d}/{curr_day:02d}"
@@ -180,7 +184,7 @@ def parse_babel():
 
 
 def parse_rbc():
-    print('-------------------- Парсимо rbc.ua --------------------')
+    print('\n Парсинг сайту rbc.ua')
 
     base_url = 'https://www.rbc.ua/rus/archive/'
 
@@ -191,7 +195,7 @@ def parse_rbc():
     curr_month = curr_date.month
     curr_day = curr_date.day
 
-    for i in range(2):
+    for i in range(days_to_parse):
         print(f'Парсимо новини за день {curr_day:02d}, місяць {curr_month:02d}, рік {curr_year}')
         curr_url = f"{base_url}{curr_year}/{curr_month:02d}/{curr_day:02d}"
         soup = get_html_file(curr_url)
@@ -228,7 +232,7 @@ def parse_rbc():
 
 
 def parse_korrespondent():
-    print('-------------------- Парсимо korrespondent.net --------------------')
+    print('\n Парсинг сайту korrespondent.net')
     base_url = 'https://ua.korrespondent.net/all/'
     news_data_list = []
 
@@ -239,7 +243,7 @@ def parse_korrespondent():
     curr_day = curr_date.day
 
     # Для кожного дня
-    for q in range(2):
+    for q in range(days_to_parse):
         print(f'Парсимо новини за день {curr_day:02d}, місяць {curr_month:02d}, рік {curr_year}')
         curr_url = f'{base_url}{curr_year}/{curr_month_literal}/{curr_day:02d}/'
 
@@ -323,6 +327,8 @@ def parse_all_sites():
                            index=False,
                            encoding='utf-8',
                            quoting=1)
+
+    print(f'\nВсього за період в {days_to_parse} було знайдено {all_articles_df.shape[0]}')
 
 
 parse_all_sites()
