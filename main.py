@@ -2,18 +2,18 @@
 Виконаємо такі частини аналізу тексту:
 1) Аналіз частоти публікацій за годину:
 2) Аналіз найчастіше вживаних слів (word cloud)
-3) Тематичний аналіз (topic modeling)(LDA-- вийшла якась фігня)
+3) Тематичний аналіз (topic modeling)
 4) Аналіз тональності за допомогою VADER
 5) Візуалізація згадок ключових осіб або подій за допомогою NER
-Так як в nltk нема української мови для видалення стоп-слів будемо користуватись цим словником:
-'https://raw.githubusercontent.com/olegdubetcky/Ukrainian-Stopwords/main/ukrainian'
-Для аналізу тональності будемо використовувати VADER з nltk і pymorphy2 для морфологічного аналізу так як в nltk нема
+Крім стоп-слів з spacy додамо також свій словник стоп-слів
+Для аналізу тональності будемо використовувати VADER і pymorphy2 для морфологічного аналізу
 української мови:
 https://github.com/kmike/pymorphy2.git
 """
 
 import spacy
 from tools import *
+from report_generator import generate_analytics_report
 
 # nltk.download('punkt_tab')
 # nltk.download('vader_lexicon')
@@ -39,10 +39,19 @@ def main():
 
 
     # ------------------------- Обробка даних -------------------------
-    news_df = pd.read_csv('parsed_articles.csv')
+    dtypes = {
+        'title': 'string',
+        'url': 'string',
+        'date': 'string',
+        'text': 'string'
+    }
+
+    news_df = pd.read_csv('parsed_articles.csv', dtype=dtypes)
 
     news_df['processed_text'] = news_df['text'].apply(lambda x: preprocess_text(x, nlp_preprocess))
     news_df['date'] = pd.to_datetime(news_df['date'])
+
+    gc.collect()
 
 
     # ------------------------- Аналіз даних -------------------------
@@ -61,6 +70,20 @@ def main():
 
     # Аналіз та візуалізація ключових осіб та подій
     named_ent_freq_cloud = extract_and_visualize_named_entities(news_df, nlp_ner)
+
+    figures = {
+            'publication_freq': publication_freq_figure,
+            'wordcloud': word_freq_cloud,
+            'all_tonality': tonality_hist,
+            'tonality_per_time': average_tonality_over_time,
+            'ner_visualization': named_ent_freq_cloud
+        }
+
+    text_results = {
+        'formed_topics': news_topics
+    }
+
+    report_file = generate_analytics_report(news_df, figures, text_results)
 
 
 if __name__ == "__main__":

@@ -4,6 +4,7 @@ import os
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from collections import Counter
 import re
+import gc
 import requests
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
@@ -33,6 +34,7 @@ def preprocess_text(text, nlp_preprocess_model):
            and not token.is_space  # видалення пробілів
            and token.lemma_.strip()  # перевірка на пусті токени
     ]
+    gc.collect()
 
     return tokens  # Повертаємо список токенів
 
@@ -71,6 +73,8 @@ def preprocess_and_analyze(text, nlp_model, SIA_model):
 
     # Об'єднуємо оброблені слова назад у текст
     processed_text = ' '.join(processed_words)
+
+    gc.collect()
 
     # Аналіз тональності
     return SIA_model.polarity_scores(processed_text)["compound"]
@@ -114,6 +118,8 @@ def words_freq_analysis(news_df):
     plt.axis('off')
     plt.show()
 
+    gc.collect()
+
     return fig
 
 
@@ -141,8 +147,11 @@ def find_news_themes(news_df):
 
     # Виведення тем
     topics = lda_model.print_topics(num_words=5)
+    print(topics)
     for idx, topic in topics:
         print(f"Тема {idx+1}: {topic}")
+
+    gc.collect()
 
     return topics
 
@@ -190,6 +199,8 @@ def tonality_analysis_VADER(news_df, nlp_preprocess_model, load_new_dict=False):
     plt.ylabel("Середня тональність")
     plt.show()
 
+    gc.collect()
+
     return fig_1, fig_2
 
 
@@ -198,11 +209,15 @@ def extract_and_visualize_named_entities(news_df, nlp_ner_model):
     # Створюємо колонку з витягнутими NER для всього датафрейму одразу
     news_df['entities'] = news_df['processed_text_str'].apply(lambda x: extract_entities(x, nlp_ner_model))
 
+    gc.collect()
+
     # Розгортаємо список сутностей в окремі рядки і підраховуємо
     entity_counts = news_df['entities'].explode().value_counts()
 
     # Конвертуємо в Counter для WordCloud
     entity_counts = Counter(dict(entity_counts))
+
+    gc.collect()
 
     # Створюємо Word Cloud для згадок іменованих сутностей
     wordcloud = WordCloud(
