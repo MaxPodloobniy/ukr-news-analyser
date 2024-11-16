@@ -126,7 +126,6 @@ def generate_analytics_report(df, figures, texts):
             <ul>
                 <li><strong>Загальна кількість публікацій:</strong> {{ total_news }}</li>
                 <li><strong>Середня тональність:</strong> {{ avg_sentiment }}</li>
-                <li><strong>Основні теми:</strong> {{ main_topics }}</li>
             </ul>
         </div>
 
@@ -150,7 +149,7 @@ def generate_analytics_report(df, figures, texts):
             <h2>3. Тематичний аналіз (LDA)</h2>
             <p>Основні теми, виявлені в новинах:</p>
             <ul>
-                {% for idx, topic in texts.formed_topics.items() %}
+                {% for idx, topic in texts.formed_topics %}
                 <li>Тема {{ idx+1 }}: {{ topic }}</li>
                 {% endfor %}
             </ul>
@@ -160,7 +159,11 @@ def generate_analytics_report(df, figures, texts):
             <h2>4. Аналіз тональності</h2>
             <p>Розподіл емоційного забарвлення новин:</p>
             <div class="plot">
-                <img src="data:image/png;base64,{{ figures.sentiment_analysis }}" alt="Sentiment Analysis">
+                <img src="data:image/png;base64,{{ figures.all_tonality }}" alt="Sentiment Analysis">
+            </div>
+            <p>Розподіл тональності за часом:</p>
+            <div class="plot">
+                <img src="data:image/png;base64,{{ figures.tonality_per_time }}" alt="Sentiment Analysis">
             </div>
         </div>
 
@@ -181,7 +184,6 @@ def generate_analytics_report(df, figures, texts):
         'total_news': len(df),
         'date_range': f"{df['date'].min().strftime('%Y-%m-%d')} - {df['date'].max().strftime('%Y-%m-%d')}",
         'avg_sentiment': f"{df['sentiment_score'].mean():.2f}",
-        'main_topics': ", ".join([f"Тема {i + 1}" for i in range(5)]),
         'figures': encoded_figures,
         'texts': {
             'formed_topics': texts['formed_topics']
