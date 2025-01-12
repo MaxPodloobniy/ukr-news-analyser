@@ -1,5 +1,4 @@
 import pandas as pd
-import csv
 import os
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from collections import Counter
@@ -169,11 +168,9 @@ def tonality_analysis_VADER(news_df, nlp_preprocess_model, load_new_dict=False):
         with open(tone_dict_path, 'wb') as f:
             f.write(r.content)
 
-    # Завантажуємо словник тональності та додаємо до VADER
-    tone_dict = {}
-    with open(tone_dict_path, 'r') as csv_file:
-        for row in csv.reader(csv_file, delimiter='\t'):
-            tone_dict[row[0]] = float(row[1])
+    # Завантажуємо словник тональності
+    tone_df = pd.read_csv(tone_dict_path, delimiter='\t', header=None, names=['word', 'score'])
+    tone_dict = dict(zip(tone_df['word'], tone_df['score']))
 
     SIA = SentimentIntensityAnalyzer()
     SIA.lexicon.update(tone_dict)
