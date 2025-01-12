@@ -13,11 +13,11 @@ https://github.com/kmike/pymorphy2.git
 
 import spacy
 from tools import *
-from report_generator import generate_analytics_report
-
-# nltk.download('punkt_tab')
-# nltk.download('vader_lexicon')
-
+from report_generator import generate_markdown_report
+'''
+nltk.download('punkt_tab')
+nltk.download('vader_lexicon')
+'''
 
 def main():
     # ------------------------- Завантаження та формування моделей -------------------------
@@ -83,7 +83,7 @@ def main():
         'formed_topics': news_topics
     }
 
-    report_file = generate_analytics_report(news_df, figures, text_results)
+    generate_markdown_report(news_df, figures, text_results)
 
 
 if __name__ == "__main__":
