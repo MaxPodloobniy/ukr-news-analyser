@@ -46,7 +46,7 @@ headers_2 = {
 }
 
 # Скільки днів парсимо
-days_to_parse = 7
+days_to_parse = 10
 
 
 def get_html_file(url, render_js=False):
@@ -74,7 +74,7 @@ def parse_ukr_pravda():
     news_data_list = []  # Зберігатимемо всі дані в списку словників
 
     now = datetime.now()
-    two_days_ago = now - timedelta(days=days_to_parse)
+    days_ago = now - timedelta(days=days_to_parse)
 
     articles = soup.find_all("div", attrs={'class': 'article article_list'})
 
@@ -89,11 +89,15 @@ def parse_ukr_pravda():
         # Конвертувати рядок дати у datetime об'єкт
         date = datetime.strptime(date_text, "%d %B %Y, %H:%M")
 
-        # Якщо дата публікації свіжіша за 2 дні
-        if date >= two_days_ago:
+        # Якщо дата публікації свіжіша за N днів
+        if date >= days_ago:
             header = article.find("div", attrs={'class': 'article_header'}).find("a")
             title = header.text.strip()
             article_url = header['href']
+
+            # Якщо відносний шлях, то додаємо домен
+            if article_url.startswith('/'):
+                article_url = 'https://www.pravda.com.ua' + article_url
 
             article_soup = get_html_file(article_url)
             text_body = article_soup.find('div', attrs={"class": ["post__text", "post_text", "post_article_text"]})
@@ -114,7 +118,6 @@ def parse_ukr_pravda():
 
                 content = " ".join(paragraphs)
 
-                print(content)
                 # Додаткова перевірка на пустий контент
                 if content.strip():
                     news_data_list.append({
@@ -313,14 +316,12 @@ def parse_korrespondent():
 
 
 def parse_all_sites():
-    # ukr_pravda_df = parse_ukr_pravda()
+    ukr_pravda_df = parse_ukr_pravda()
     babel_df = parse_babel()
     rbc_df = parse_rbc()
     korrespondent_df = parse_korrespondent()
 
-    print(babel_df['date'])
-
-    all_articles_df = pd.concat([babel_df, rbc_df, korrespondent_df], axis=0, ignore_index=True)
+    all_articles_df = pd.concat([ukr_pravda_df, babel_df, rbc_df, korrespondent_df], axis=0, ignore_index=True)
     all_articles_df['text'] = all_articles_df['text'].str.replace(r'[\n\t\r]', ' ', regex=True)
 
     all_articles_df.to_csv('parsed_articles.csv',
